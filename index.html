@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuminousLagoon - Game Studio</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%2345a396'/%3E%3Cpath d='M50 25 C 35 40, 35 60, 50 75 C 65 60, 65 40, 50 25' fill='none' stroke='white' stroke-width='4'/%3E%3Ccircle cx='50' cy='45' r='5' fill='white'/%3E%3C/svg%3E" type="image/svg+xml">
+    <meta name="theme-color" content="#45a396">
+    <style>
+        /* Notification popup styles */
+        .notification-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        .notification-popup.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .notification-content {
+            background-color: var(--card-bg, #1f2937);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 480px;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            transform: translateY(20px);
+            transition: transform 0.4s ease;
+            border-left: 4px solid var(--highlight-color, #e94560);
+        }
+        
+        .notification-popup.show .notification-content {
+            transform: translateY(0);
+            animation: pulse-soft 1s ease;
+        }
+        
+        @keyframes pulse-soft {
+            0% { transform: scale(0.95); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        
+        .notification-icon {
+            font-size: 4rem;
+            color: var(--highlight-color, #e94560);
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(233, 69, 96, 0.1);
+        }
+        
+        .notification-text h3 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--highlight-color, #e94560), #ff6b81);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+        
+        .notification-text p {
+            font-size: 1.1rem;
+            color: #ccc;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .notification-btn {
+            background: linear-gradient(45deg, var(--highlight-color, #e94560), #ff6b81);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-top: 15px;
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.3);
+        }
+        
+        .notification-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(233, 69, 96, 0.4);
+        }
+        
+        .notification-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: transparent;
+            border: none;
+            color: #999;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .notification-close:hover {
+            color: var(--highlight-color, #e94560);
+        }
+        
+        /* Form status message */
+        #formStatus {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            transition: opacity 0.3s ease;
+        }
+        
+        #formStatus.success {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+        }
+        
+        #formStatus.error {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+        }
+        
+        #formStatus.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Preloader -->
+    <div class="preloader">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Custom cursor -->
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <header>
+        <nav>
+            <div class="logo">
+                <img src="img/logo.svg" alt="LuminousLagoon Logo" class="logo-img">
+                <span class="logo-text">LuminousLagoon</span>
+            </div>
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="nav-links">
+                <a href="#games">Games</a>
+                <a href="#about">About</a>
+                <a href="#testimonials">Testimonials</a>
+                <a href="#contact">Contact</a>
+                <button class="theme-toggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Creating Immersive Gaming Experiences</h1>
+            <p>Welcome to LuminousLagoon, where we craft unique and engaging games that push the boundaries of creativity.</p>
+            <div class="hero-buttons">
+                <a href="#games" class="cta-button">Explore Our Games</a>
+                <a href="#contact" class="cta-button secondary">Get in Touch</a>
+            </div>
+        </section>
+
+        <section id="games" class="games">
+            <h2 class="section-title fade-in">Our Games</h2>
+            <div class="game-grid">
+                <div class="game-card fade-in">
+                    <div class="game-image" style="background-image: url('https://images.unsplash.com/photo-1545235617-9465d2a55698?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80')"></div>
+                    <h3>App Empire Tycoon</h3>
+                    <p>Live the dream of an ambitious developer in App Empire Tycoon! Start small, crafting simple apps and tackling tricky clients. Grow your skills, attract investors, and expand your portfolio as you chase greatness. Can you build the ultimate tech empire and make history?</p>
+                    <div class="game-tags">
+                        <span>Simulation</span>
+                        <span>Strategy</span>
+                        <span>Business</span>
+                    </div>
+                    <a href="https://store.steampowered.com/app/3468180/App_Empire_Tycoon/" class="steam-button" target="_blank">
+                        <i class="fab fa-steam"></i> Buy on Steam
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="about">
+            <h2 class="section-title fade-in">About Us</h2>
+            <p class="fade-in">LuminousLagoon is a passionate game development studio dedicated to creating memorable gaming experiences. Our team of talented developers, artists, and designers work together to bring unique visions to life.</p>
+            <div class="team-stats">
+                <div class="stat scale-in">
+                    <h3>5+</h3>
+                    <p>Years Experience</p>
+                </div>
+                <div class="stat scale-in">
+                    <h3>3</h3>
+                    <p>Games Released</p>
+                </div>
+                <div class="stat scale-in">
+                    <h3>10000+</h3>
+                    <p>Players Worldwide</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="testimonials" class="testimonials">
+            <h2 class="section-title fade-in">What Gamers Say</h2>
+            <div class="testimonial-slider fade-in">
+                <div class="testimonial-slide active">
+                    <p class="testimonial-content">"App Empire Tycoon is surprisingly addictive! The pixel art is charming, and I actually learned a thing or two about app development while playing. It's a clicker game with some real depth underneath. Just wish there were more events or challenges later on."
+
+                    </p>
+                    <p class="testimonial-author">— Radivoje Stojanovic, Game Reviewer</p>
+                </div>
+                <div class="testimonial-slide">
+                    <p class="testimonial-content">"I downloaded App Empire Tycoon for my teenager and ended up playing it myself! It introduces concepts of app development in a super accessible way. Great for kids interested in tech – and the pixel art keeps things fun and lighthearted."</p>
+                    <p class="testimonial-author">— Taylor Foster, Streamer</p>
+                </div>
+                <div class="testimonial-slide">
+                    <p class="testimonial-content">"This game is a gem. As someone who loves indie titles, App Empire Tycoon nails the balance between fun and educational content. Watching my tiny dev studio grow into an app empire was incredibly satisfying. Plus, the retro pixel vibe is spot on."
+                    </p>
+                    <p class="testimonial-author">— Shiva Pandey, Game Reviewer</p>
+                </div>
+                <div class="slider-nav">
+                    <div class="slider-dot active" data-slide="0"></div>
+                    <div class="slider-dot" data-slide="1"></div>
+                    <div class="slider-dot" data-slide="2"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="contact">
+            <h2 class="section-title fade-in">Get in Touch</h2>
+            <p class="fade-in">Interested in working with us or have questions? Reach out!</p>
+            <div class="contact-form fade-in">
+                <form id="contactForm" action="https://formspree.io/f/xjkylvoj" method="POST">
+                    <input type="text" name="name" placeholder="Your Name" required>
+                    <input type="email" name="email" placeholder="Your Email" required>
+                    <textarea name="message" placeholder="Your Message" required></textarea>
+                    <!-- Hidden field to specify recipient -->
+                    <input type="hidden" name="_to" value="office@lumlagoon.com">
+                    <!-- Prevent spam -->
+                    <input type="text" name="_gotcha" style="display:none">
+                    <button type="submit">
+                        <i class="fas fa-paper-plane"></i>
+                        Send Message
+                    </button>
+                </form>
+                <div id="formStatus" class="hidden"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 LuminousLagoon. All rights reserved.</p>
+        <div class="social-links">
+            <a href="https://www.tiktok.com/@luminouslagoongamedev" target="_blank"><i class="fab fa-tiktok"></i></a>
+            <a href="https://www.linkedin.com/company/105437002/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+    </footer>
+
+    <!-- Scroll to top button -->
+    <div class="scroll-top">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <!-- Notification popup -->
+    <div class="notification-popup" id="notificationPopup">
+        <div class="notification-content">
+            <div class="notification-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="notification-text">
+                <h3>Thank You!</h3>
+                <p>Your message has been sent successfully. We'll get back to you as soon as possible.</p>
+                <button class="notification-btn" id="closeNotificationBtn">
+                    <i class="fas fa-thumbs-up"></i> Great!
+                </button>
+            </div>
+            <button class="notification-close" id="closeNotification">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html> 
